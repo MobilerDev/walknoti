@@ -4,8 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.Toast;
 
 import com.cansevin.walknoti.models.AccessToken;
@@ -16,7 +19,14 @@ import com.cansevin.walknoti.network.NotiInterface;
 import com.cansevin.walknoti.network.RetrofitClient;
 import com.cansevin.walknoti.models.NotificationMessage.Builder;
 import com.huawei.agconnect.config.AGConnectServicesConfig;
+import com.huawei.hianalytics.hms.HiAnalyticsTools;
 import com.huawei.hms.aaid.HmsInstanceId;
+import com.huawei.hms.ads.AdParam;
+import com.huawei.hms.ads.BannerAdSize;
+import com.huawei.hms.ads.HwAds;
+import com.huawei.hms.ads.banner.BannerView;
+import com.huawei.hms.analytics.HiAnalytics;
+import com.huawei.hms.analytics.HiAnalyticsInstance;
 import com.huawei.hms.common.ApiException;
 import com.huawei.hms.kit.awareness.Awareness;
 import com.huawei.hms.kit.awareness.barrier.AwarenessBarrier;
@@ -30,22 +40,79 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     AwarenessBarrier keepStillBarrier;
-    String pushtoken;
+    String pushtoken,event;
+    Button btn_oky;
+    Integer delayQ,eventQ,delay = null;
+    private BannerView bannerView;
+    HiAnalyticsInstance instance;
     public static final String NOTI_URL = "https://push-api.cloud.huawei.com/v1/";
     public static final String ACCESS_TOKEN = "https://login.cloud.huawei.com/oauth2/";
     String accesstoken;
+    String[] eventdata = new String[]{"Su","Yemek","Tuvalet","Hatırlatıcı"};
+    String[] minutedata = new String[]{"15", "30", "45", "60","120","180"};
+    NumberPicker minutepicker,eventpicker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        bannerView=findViewById(R.id.banner_view);
+        bannerView.setAdId("testw6vs28auh3");
+        bannerView.setBannerAdSize(BannerAdSize.BANNER_SIZE_320_50);
+        AdParam adParam = new AdParam.Builder().build();
+        bannerView.loadAd(adParam);
+
+        HiAnalyticsTools.enableLog();
+        HiAnalyticsInstance instance = HiAnalytics.getInstance(this);
+        Bundle bundle = new Bundle();
+        bundle.putString("exam_difficulty","high");
+        bundle.putString("exam_level","1-1");
+        bundle.putString("exam_time","20190520-08");
+        instance.onEvent("begin_examination", bundle);
+
+        HwAds.init(this);
         keepStillBarrier = BehaviorBarrier.keeping(BehaviorBarrier.BEHAVIOR_STILL);
+        eventpicker = findViewById(R.id.event_picker);
+        minutepicker = findViewById(R.id.minute_picker);
+        btn_oky = findViewById(R.id.btn_success);
+
+        getActivity();
+        minutepicker.setMinValue(0);
+        eventpicker.setMinValue(0);
+        minutepicker.setMaxValue(minutedata.length-1);
+        eventpicker.setMaxValue(eventdata.length-1);
+        minutepicker.setDisplayedValues(minutedata);
+        eventpicker.setDisplayedValues(eventdata);
+        btn_oky.setOnClickListener(v -> SetMin());
         GetBehavior();
-        getToken();
+    }
+
+    private void SetMin() {
+        delayQ = minutepicker.getValue();
+        eventQ = eventpicker.getValue();
+        delay = Integer.parseInt(minutedata[delayQ]) * 60000;
+        event = eventdata[eventQ];
+        final Handler handler = new Handler();
+        handler.postDelayed(this::getToken, 1000);
+    }
+
+    private void getActivity() {
+        Awareness.getCaptureClient(this).getBehavior()
+                .addOnSuccessListener(behaviorResponse -> {
+                    BehaviorStatus behaviorStatus = behaviorResponse.getBehaviorStatus();
+                    DetectedBehavior mostLikelyBehavior = behaviorStatus.getMostLikelyBehavior();
+                    String str = "Most likely behavior type is " + mostLikelyBehavior.getType() +
+                            ",the confidence is " + mostLikelyBehavior.getConfidence();
+                    Log.i("activity", str);
+                })
+                .addOnFailureListener(e -> Log.e("activityfail", "get behavior failed", e));
     }
 
     public void getAccessToken(){
         AccessInterface apiInterface = RetrofitClient.getClient(ACCESS_TOKEN).create(AccessInterface.class);
-        Call<AccessToken> call = apiInterface.GetAccessToken("client_credentials",102178227,"4356f4efd87c29b08c040edf71b135f7c4325ec4103d08ac96dd715b230eced3");
+        Call<AccessToken> call = apiInterface.GetAccessToken("client_credentials",102178227,
+                "4356f4efd87c29b08c040edf71b135f7c4325ec4103d08ac96dd715b230eced3");
         call.enqueue(new Callback<AccessToken>() {
             @Override
             public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
@@ -64,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     public void sendNotification(String accesstoken){
         NotiInterface notiInterface = RetrofitClient.getClient(NOTI_URL).create(NotiInterface.class);
         Intent intent = new Intent(this, MapsActivity.class);
-        NotificationMessage notificationMessage = (new Builder("Title","Başarılı",pushtoken,intent.toString())).build();
+        NotificationMessage notificationMessage = (new Builder(event,event + " ihtiyacın için seni yönlendireyim mi?",pushtoken,intent.toString(),eventQ)).build();
         Call<PushResult> callNoti = notiInterface.sendNotification(accesstoken,notificationMessage);
         callNoti.enqueue(new Callback<PushResult>() {
             @Override
@@ -77,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("callnoti",t.toString());
             }
         });
+
     }
 
     public void GetBehavior(){

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">walknoti</string>
+    <string name="walking">Yürüme</string>
+    <string name="bicycling">Bisiklet</string>
+    <string name="driving">Araba</string>
+    <string name="distance_time">%1$s (%2$s)</string>
+    <string name="distance_km">km</string>
+    <string name="distance_m">m</string>
 </resources>

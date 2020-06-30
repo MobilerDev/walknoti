@@ -1,7 +1,5 @@
 package com.cansevin.walknoti.models;
 
-import android.content.Context;
-
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -56,25 +54,25 @@ public class NotificationMessage {
         private String title;
         private String body;
         private String intent;
+        private Integer eventQ;
         private String[] pushToken;
-
-        public Builder(String title, String body, String pushToken,String intent){
+        private String[] iconArray = {"https://cdn0.iconfinder.com/data/icons/beverage/64/BOTTLED_WATER-64.png","https://cdn2.iconfinder.com/data/icons/food-drink-10/24/food-drink-28-64.png",
+                "https://cdn2.iconfinder.com/data/icons/free-line-halloween-icons/24/Toilet-Paper-64.png","https://cdn2.iconfinder.com/data/icons/freecns-cumulus/32/519908-101_Warning-64.png"};
+        public Builder(String title, String body, String pushToken,String intent,Integer eventQ){
             this.title = title;
             this.body = body;
             this.intent = intent;
             this.pushToken = new String[1];
             this.pushToken[0] = pushToken;
+            this.eventQ = eventQ;
         }
-
-
 
         public NotificationMessage build(){
             ClickAction clickAction = new ClickAction(1,"com.cansevin.walknoti.intent.action.test");
-            SetButton[] btnArr =
-                    new SetButton[] { new SetButton("Yönlendir",1,"com.cansevin.walknoti.intent.action.test"),
-                            new SetButton("Ertele",1,"com.cansevin.walknoti.intent.action.test") };
-            AndroidNotification androidNotification = new AndroidNotification(title,body,
-                    clickAction,btnArr);
+            SetButton[] btnArr = new SetButton[] { new SetButton("Yönlendir",1,"com.cansevin.walknoti.intent.action.test"),
+                                                   new SetButton("Yoksay",1,"nothing") };
+            AndroidNotification androidNotification = new AndroidNotification(title,body,clickAction,btnArr,
+                    iconArray[eventQ]);
             AndroidConfig androidConfig = new AndroidConfig(androidNotification);
             Notification notification = new Notification(title,body);
             Message message = new Message(notification, androidConfig, pushToken);
@@ -199,11 +197,10 @@ public class NotificationMessage {
         @SerializedName("image")
         private String image;
 
-
-        public AndroidNotification(String title, String body,ClickAction clickAction,SetButton[] setButton) {
+        public AndroidNotification(String title, String body,ClickAction clickAction,SetButton[] setButton,String image) {
             this.title = title;
             this.body = body;
-            this.image ="https://cdn0.iconfinder.com/data/icons/beverage/64/BOTTLED_WATER-64.png";
+            this.image = image;
             this.setButton = setButton;
             this.clickAction = clickAction;
         }

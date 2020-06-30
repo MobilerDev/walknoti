@@ -3,4 +3,16 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="activityBackground">#121212</color>
+    <color name="activityBackgroundLight">#f9f9f9</color>
+    <color name="warm_grey">#7e7e7e</color>
+    <color name="warm_grey_two">#969696</color>
+    <color name="forest_green">#2E7F18</color>
+    <color name="sap_green">#45731E</color>
+    <color name="antique_bronze">#675E24</color>
+    <color name="chestnut">#8D472B</color>
+    <color name="sweet_brown">#B13433</color>
+    <color name="cardinal">#C82538</color>
+    <color name="white_90">#e6e6e6</color>
+    <color name="grey_87">#dedede</color>
 </resources>

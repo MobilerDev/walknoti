@@ -12,6 +12,10 @@ android {
         targetCompatibility = 1.8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     defaultConfig {
         applicationId "com.cansevin.walknoti"
         minSdkVersion 24
@@ -44,8 +48,17 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.core:core-ktx:1.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.huawei.hms:location:4.0.3.301'
+    implementation 'com.huawei.hms:maps:4.0.1.301'
+    implementation 'com.huawei.hms:site:4.0.2.300'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'com.huawei.hms:hianalytics:4.0.3.300'
+    implementation 'com.huawei.hms:ads-lite:13.4.29.303'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.6.0'
 }
 repositories {
     mavenCentral()
